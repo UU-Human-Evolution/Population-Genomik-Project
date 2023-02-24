@@ -344,22 +344,32 @@ The next step would be to start merging your data with comparative datasets. But
 Usually, when you merge your data with another dataset there are strand issues. The SNPs in the other dataset might be typed on the reverse DNA strand and yours on the forward, or vice versa. Therefore you need to flip the strand to the other orientation for all the SNPs where there is a strand mismatch. One should not flip C/G and A/T SNPs because one cannot distinguish reverse and forward orientation (i.e. C/G becomes G/C unlike other SNPs i.e. G/T which become C/A). Therefore before merging and flipping all A/T and C/G SNPs must be excluded. However, this can be a problem since some of your SNPs in your dataset may be monomorphic when you don't apply the MAF filter. I.E in the bim file they will appear as C 0 (with 0 meaning missing). So you don't know what kind of SNP it is, it can be C G or C T for instance if it is C G it needs to be filtered out but not if it is C T.
 Therefore, before merging our data to other datasets it is important to first merge your data with a fake / reference_individual, that you prepare, which is heterozygous at every SNP position. This “fake” reference individual you can easily prepare from the SNP info file you get from the genotyping company or your own genomics processing software (such as Genome Studio from Illumina). You can also prepare it from data downloaded for each SNP from a web-database such as dbSNP. 
 
-### A Proper merging path
-The proper way of doing this takes might take a bit more time and involves a few added steps but it will yield a higher genotyping rate. If you feel like you have enough of time on your hands, feel free to follow the this merging protocol. 
+*You are using the versions of the datasets after they all passed the filtering steps separately
+*P.S. As long as you have all the files/datasets in the same directory you don't need to specify the full paths. If they are in different datasets, remember to add the full path to the file, such as:
+```/proj/uppmax2022-2-21/PGA_2022/full_path_to_YOUR_OWN_directory/Reference_datasets/datasetA/file```
 
-### A.1 Rename SNPs 
-When merging datasets from different chips, the same position can have different names on different chips. The rename_SNP.py script can be used on the .bim files to change the SNP name into the names based on position. Luckily for you, this has already been done for the three reference datasets. Otherwise there would have been just the additional step of renaming the SNPs for each dataset prior to merging. But since we don't know where the Unknown dataset came from, we want to conduct this step for it. Check the bim file for the Unknown dataset and see the SNP names before you rename them.
+*P.P.S. Do this in an **interactive node!**
 
-In order to run rename_SNP.py first load ```module load python/2.7.11``` (Issues might occur if not using the right version of Python).
 
-```python rename_SNP.py Unknown.bim```
-After which you should get that the output with replaced SNP names has been written to Unknown.bim_pos_names. You can delete the original bim (or rename it if you're feeling unsure) & edit the ```Unknown.bim_pos_names``` to be ```Unknown.bim```.
+### A.1 Standardize SNP names across datasets
+
+When merging datasets from different chips, the same position can have different names on different chips. The ```rename_SNP.py``` script can be used on the `.bim` files to change the SNP name into the names based on position. Luckily for you, this has already been done for the three reference datasets. Otherwise there would have been just the additional step of renaming the SNPs for each dataset prior to merging.
+But since we don't know where the Unknown dataset came from, we want to conduct this step for it. 
+Check the bim file for the Unknown dataset and see the SNP names before you rename them.  
+
+In order to run ```rename_SNP.py``` first load ```module load python/2.7.11``` (*Issues might occur if not using the right version of Python*).
+
+```
+python rename_SNP.py Unknown.bim
+```
+After which you should get that the output with replaced SNP names has been written to ```Unknown.bim_pos_names```.
+You can delete the original bim (or rename it if you're feeling unsure) & edit the ```Unknown.bim_pos_names``` to be ```Unknown.bim```.
 
 Check to see what happened after the script did its job.
 
 ### A.2 Merging the reference datasets to the RefInd
 
-We want to merge the our data with a set of reference populations that we get from an already published study such as HapMap data or HGDP population data (you can start with Schlebusch_2012). Many of the sites archiving the data provided them in PLINK format as well. For this practical, we selected a few Ref pops from HapMap and HGDP to compare your Unknown populations to.
+We want to merge the our data with a set of reference populations that we get from an already published study such as HapMap data or HGDP population data (start with Schlebusch_2012). Many of the sites archiving the data provided them in PLINK format as well. For this practical, we selected a few Ref pops from HapMap and HGDP to compare your Unknown populations to.
 
 Have you noticed that PLINK sometimes generates a .nof file and in the log file output the following is mentioned 902 SNPs with no founder genotypes observed Warning, MAF set to 0 for these SNPs (see --nonfounders) This is the monomorphic SNPs in your data.
 
@@ -435,76 +445,7 @@ mv MergeRefPop3.bed PopStrucIn1.bed; mv MergeRefPop3.bim PopStrucIn1.bim; mv Mer
 ```
 Now you have generated your input files for the next exercise which will deal with population structure analysis. You will look at the population structure of your unknown samples in comparison to the known reference populations from HapMap and HGDP.
 
-### B. Simpler path
-Due to time constraints, we are giving you a more simplified albeit cruder way to do this as well. If done correctly it should take us to a similar end goal, but there will surely be more missingness. It would be a great exercise to compare the two approaches and how much they end up differing in the end.
-### B.1 Merging the reference datasets
-We start by merging one dataset (Ex.Schlebusch_2012) to another one (ex.Patin_2017):
-*You are using the versions of the datasets after they all passed the filtering steps separately
-*P.S. As long as you have all the files/datasets in the same directory you don't need to specify the full paths. If they are in different datasets, remember to add the full path to the file, such as:
-```/proj/uppmax2022-2-21/PGA_2022/full_path_to_YOUR_OWN_directory/Reference_datasets/datasetA/file```
-
-*P.P.S. Do this in an **interactive node!**
-
-``` 
-plink --bfile Schlebusch_2012 --bmerge Patin_2017 --recode transpose --allow-no-sex --out Merged_Patin_Schlebusch
-```
-
-This, expectedly produces an error, because of the strand mismatches:
-
-```
-Error: 49 variants with 3+ alleles present.
-```
-What you need to do then is to flip those positions using the ```.missnp``` file that is produced after the error:
-
-```
-plink --bfile Patin_2017 --flip Merged_Patin_Schlebusch.missnp --make-bed --out Patin_corrected
-```
-After this, if you try again, you should be able to do the merge :
-
-```
-plink --bfile Schlebusch_2012 --bmerge Patin_corrected --recode transpose --allow-no-sex --out Merged_Patin_Schlebusch
-```
-Apply the same logic when merging the third dataset to the merged dataset of the first two. Once again, you will have strand issues, so try flipping again, and remerging. As long as you didn't lose track of what you're merging to what, everything should be working as expected.
-
-If you found that difficult to follow, you can check Plink's official documentation on how to do the merging (https://www.cog-genomics.org/plink/1.9/data.
-
-When you're done with merging the three reference datasets to eachother, and you have them in one file, continue with the filtering steps below.
-
-## B.2 Standardize SNP names across datasets
-
-When merging datasets from different chips, the same position can have different names on different chips. The ```rename_SNP.py``` script can be used on the `.bim` files to change the SNP name into the names based on position. Luckily for you, this has already been done for the three reference datasets. Otherwise there would have been just the additional step of renaming the SNPs for each dataset prior to merging.
-But since we don't know where the Unknown dataset came from, we want to conduct this step for it. 
-Check the bim file for the Unknown dataset and see the SNP names before you rename them.  
-
-In order to run ```rename_SNP.py``` first load ```module load python/2.7.11``` (*Issues might occur if not using the right version of Python*).
-
-```
-python rename_SNP.py Unknown.bim
-```
-After which you should get that the output with replaced SNP names has been written to ```Unknown.bim_pos_names```.
-You can delete the original bim (or rename it if you're feeling unsure) & edit the ```Unknown.bim_pos_names``` to be ```Unknown.bim```.
-
-Check to see what happened after the script did its job.
-
-## B.3 The Final Merge
-
-At this point you should have merged all three reference datasets to each other, conducted all the filtering & QC steps and renamed the SNP names in the Unknown. Now its time to merge the reference dataset to the Unknown following the same logic as above. 
-
-```
-plink --bfile COMBINED_DATASET --bmerge UNKNOWN.bed UNKNOWN.bim UNKNOWN.fam --make-bed --out FINAL_MERGE  
-```
-There will be *at least* one strand flipping issue. 
-Try and see if after a few flips you can merge the two datasets together.
-If this is still not working, it is possible that a few positions are causing this issue. In this case (assuming its just a few - check what the output says) you can exclude those problematic variants and remerge:
-
-```
-plink --bfile source1 --exclude merged.missnp --make-bed --out source1_tmp
-plink --bfile source2 --exclude merged.missnp --make-bed --out source2_tmp
-plink --bfile source1_tmp --bmerge source2_tmp --recode transpose --allow-no-sex --out PopStrucIn1
-rm source1_tmp.*
-rm source2_tmp.*
-```
-Again the official Plink documentation (https://www.cog-genomics.org/plink/1.9/data) has a good explanation on how to do this.
+*Again the official Plink documentation (https://www.cog-genomics.org/plink/1.9/data) has a good explanation on how to do all of the above.*
 
 Make sure to remember what your two final datasets are called. The one where you merged all the reference datasets and the one where you did that but also added the Unknown. 
 
