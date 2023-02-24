@@ -82,7 +82,7 @@ Generally, for any bigger job (bigger Plink jobs, PCA, Admixture) **always work 
 
 Ex.:
 ```
-   interactive -A uppmax2022-2-21 -M snowy -p node -n 32 -t 02:00:00
+   interactive -A uppmax2023-2-1 -M snowy -p node -n 32 -t 02:00:00
 ```
 ### Moving about:
 ```
