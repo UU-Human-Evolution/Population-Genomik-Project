@@ -19,8 +19,8 @@ The structure of the project work will be organized as follows:
 
 The specific point of the exercise is for you to identify the populations you have been given in the **'Unknown.fam'**. In order to achieve this, you have been provided a bunch of references (three different datasets) that should come in handy as a way to compare the unknown to the known. Both reference and target populations can be found in the DATA directory:
 ```
-/proj/uppmax2023-2-1/MYSTERY_QUEST/Reference_datasets
-/proj/uppmax2023-2-1/MYSTERY_QUEST/Mystery_populations
+/proj/uppmax2023-2-1/MYSTERY_QUEST/DATA/Reference_datasets
+/proj/uppmax2023-2-1/MYSTERY_QUEST/DATA/Mystery_populations
 ```
 Helpful scripts are there to aid you on your quest can be found:
 ```
