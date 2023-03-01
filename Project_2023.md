@@ -345,8 +345,7 @@ Usually, when you merge your data with another dataset there are strand issues. 
 Therefore, before merging our data to other datasets it is important to first merge your data with a fake / reference_individual, that you prepare, which is heterozygous at every SNP position. This “fake” reference individual you can easily prepare from the SNP info file you get from the genotyping company or your own genomics processing software (such as Genome Studio from Illumina). You can also prepare it from data downloaded for each SNP from a web-database such as dbSNP. 
 
 *You are using the versions of the datasets after they all passed the filtering steps separately
-*P.S. As long as you have all the files/datasets in the same directory you don't need to specify the full paths. If they are in different datasets, remember to add the full path to the file, such as:
-```/proj/uppmax2022-2-21/PGA_2022/full_path_to_YOUR_OWN_directory/Reference_datasets/datasetA/file```
+*P.S. As long as you have all the files/datasets in the same directory you don't need to specify the full paths. If they are in different datasets, remember to add the full path to ```full_path_to_YOUR_OWN_directory/Reference_datasets/datasetA/file```
 
 *P.P.S. Do this in an **interactive node!**
 
