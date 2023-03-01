@@ -392,7 +392,7 @@ sed 's/\t/ /g' RefInd1_ext.bim | grep " T A" >>ATCGlist
 Exclude the CG and AT SNPs from both your RefInd and data:
 ```
 plink  --bfile RefInd1_ext --exclude ATCGlist --make-bed --out RefInd1_ext2 
-plink  --bfile Schlebusch_2012 --exclude ATCGlist --make-bed --out Schlebusch_20122
+plink  --bfile Schlebusch_2012 --exclude ATCGlist --make-bed --out Schlebusch_2012
 ```
 Merge with RefInd
 ```
