@@ -163,14 +163,12 @@ lgen format: long format (see manual, not used that often)
 
 ### Setup
 Navigate to the directory you want to work in.
-```
-cd path (change directory)
-mkdir directory_name (create a new directory)
-```
-If you don't already have a working directory for this course then create one now:
 
 ```
 cd /proj/uppmax2023-2-1 #Uppmax project for this course
+```
+If you don't already have a working directory for this course then create one now:
+```
 mkdir your_unique_team_name
 ```
 
