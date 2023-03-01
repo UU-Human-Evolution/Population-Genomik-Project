@@ -384,7 +384,7 @@ plink --bfile RefInd --extract Schlebusch_2012.bim --make-bed --out RefInd1_ext
 ```
 Make a list of CG and AT SNPs in your data:
 ```
-sed 's/\t/ /g' RefInd1_ext.bim | grep " C G" >ATCGlist
+sed 's/\t/ /g' RefInd1_ext.bim | grep " C G" >>ATCGlist
 sed 's/\t/ /g' RefInd1_ext.bim | grep " G C" >>ATCGlist
 sed 's/\t/ /g' RefInd1_ext.bim | grep " A T" >>ATCGlist
 sed 's/\t/ /g' RefInd1_ext.bim | grep " T A" >>ATCGlist
@@ -396,13 +396,13 @@ plink  --bfile Schlebusch_2012 --exclude ATCGlist --make-bed --out Schlebusch_20
 ```
 Merge with RefInd
 ```
-plink --bfile RefInd1_ext2 --bmerge Schlebusch_20122.bed Schlebusch_20122.bim Schlebusch_20122.fam --make-bed --out MergeRef1  
+plink --bfile RefInd1_ext2 --bmerge Schlebusch_2012.bed Schlebusch_2012.bim Schlebusch_2012.fam --make-bed --out MergeRef1  
 ```
 An **error is generated because of the strand mismatches**. 
 The generated file MergeRef1.missnp contains the info on the SNPs where there are mismatches - flip the strand of these SNPs in your data.
 
 ```
-Schlebusch_20122 --flip MergeRef1-merge.missnp --make-bed --out  unk7  
+Schlebusch_2012 --flip MergeRef1-merge.missnp --make-bed --out  unk7  
 ```
 Try merging again:
 ```
@@ -474,7 +474,9 @@ You can read up on how to prune for LD(https://dalexander.github.io/admixture/ad
 
 ```plink --bfile YOUR_DATASET --indep-pairwise 10 10 0.1
    plink --bfile YOUR_DATASET --extract plink.prune.in --make-bed --out YOUR_DATASET_PRUNED
+
 ```
+Check how much you're pruning out. Perhaps you can tweak the parameters.
 
 ## Step 2 Principal component Analysis with Eigensoft
 
@@ -484,7 +486,7 @@ Look at the output PDF. How many of the PCs do you think contain useful informat
 
 ## Step 3 Projected PCA
 
-There is a reason why we are doing a projected PCA instead of a "normal" PCA. It would be cool if you thought about why we have decided to do this step. Maybe read up a bit on what it is and what it does.
+There is a reason why we are doing a projected PCA instead of a "conventional" PCA. It would be cool if you thought about why we have decided to do this step. Maybe read up a bit on what it is and what it does.
 
 For running a projected PCA, you first need to produce some files:
 
