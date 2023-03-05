@@ -382,7 +382,7 @@ plink --bfile RefInd --extract Schlebusch_2012.bim --make-bed --out RefInd1_ext
 ```
 Make a list of CG and AT SNPs in your data:
 ```
-sed 's/\t/ /g' RefInd1_ext.bim | grep " C G" >>ATCGlist
+sed 's/\t/ /g' RefInd1_ext.bim | grep " C G" >ATCGlist
 sed 's/\t/ /g' RefInd1_ext.bim | grep " G C" >>ATCGlist
 sed 's/\t/ /g' RefInd1_ext.bim | grep " A T" >>ATCGlist
 sed 's/\t/ /g' RefInd1_ext.bim | grep " T A" >>ATCGlist
