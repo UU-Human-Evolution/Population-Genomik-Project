@@ -432,10 +432,8 @@ Finally, after you've merged all the reference datasets, we need to merge in the
 ```
 plink --bfile ALL_COMBINED_DATASETS --remove RefInd1.fam --make-bed --out FINAL_DATASET  
 ```
-This is the final files for the next exercise. Rename them:
-```
-mv FINAL_DATASET.bed PopStrucIn1.bed; mv FINAL_DATASET.bim PopStrucIn1.bim; mv FINAL_DATASET.fam PopStrucIn1.fam 
-```
+This is the final files for the next exercise.
+
 Now you have generated your input files for the next exercise which will deal with population structure analysis. You will look at the population structure of your unknown samples in comparison to the known reference populations from HapMap and HGDP.
 
 *Again the official Plink documentation (https://www.cog-genomics.org/plink/1.9/data) has a good explanation on how to do all of the above.*
@@ -466,8 +464,8 @@ Furthermore, make sure to doublecheck your script before running it. 90% of issu
 Before running PCA & ADMIXTURE it is advisable to prune the data to thin the marker set for linkage disequilibrium.
 You can read up on how to prune for LD(https://dalexander.github.io/admixture/admixture-manual.pdf).
 
-```plink --bfile YOUR_DATASET --indep-pairwise 10 10 0.1
-   plink --bfile YOUR_DATASET --extract plink.prune.in --make-bed --out YOUR_DATASET_PRUNED
+```plink --bfile FINAL_DATASET --indep-pairwise 10 10 0.1
+   plink --bfile FINAL_DATASET --extract plink.prune.in --make-bed --out FINAL_DATASET_PRUNED
 
 ```
 Check how much you're pruning out. Perhaps you can tweak the parameters.
@@ -475,7 +473,7 @@ Check how much you're pruning out. Perhaps you can tweak the parameters.
 ## Step 2 Principal component Analysis with Eigensoft
 
 The first population structure method we will look at is Principal Components Analysis with Eigensoft. 
-There is a really good explanation on how to run smartPCA(https://gaworkshop.readthedocs.io/en/latest/contents/05_pca/pca.html). Once again, if you are feeling able, and still on time, it would be cool if you ran a smartPCA with only the *Reference* populations and one from the *Combined* dataset and see if you can spot a difference.
+There is a really good explanation on how to run smartPCA(https://gaworkshop.readthedocs.io/en/latest/contents/05_pca/pca.html). If you are feeling able, and still on time, it would be cool if you ran a smartPCA with only the *Reference* populations and one from the *Combined* dataset and see if you can spot a difference.
 Look at the output PDF. How many of the PCs do you think contain useful information. What part of the variation is represented by each of the PCs. Can you see the percentage variation that each PC explains?
 
 ## Step 3 Projected PCA
@@ -493,7 +491,7 @@ To produce the tped, you can use plink as you've done so far.
 And to produce the two population lists:
 
 ```
-awk {'print $1'} YOUR_DATASET.tfam |sort|uniq > Sorted_list_of_the_populations.txt
+awk {'print $1'} FINAL_DATASET.tfam |sort|uniq > Sorted_list_of_the_populations.txt
 ```
 Then, this sorted list of populations, you can subset to an ```unknown.txt``` and a ```modern.txt``` using any approach you like.
 *Note Populations IDs in "modern reference pops" must exactly match the IDs in the tfam, while population IDs in "unkown pops to include" can be more general (e.g. HG_SE instead of HG_SE_SF12) - No error messages when this is violated but weird results may occur!
@@ -520,10 +518,10 @@ doublechecks"; exit 1; }
 fi
 ```
 
-After you've sorted the abovementioned you can go ahead & submit a sbatch job:
+After you've sorted the abovementioned, make a ```tped``` version of the dataset and you can go ahead & submit a sbatch job:
 
 ```
-sbatch -A uppmax2023-2-1 -M snowy -p core -n 2 -t 07:00:00 -J PCA pca_lsqproj.sh YOUR_PRUNED_DATASET_TPED MODERN.txt UNKNOWN.txt
+sbatch -A uppmax2023-2-1 -M snowy -p core -n 2 -t 07:00:00 -J PCA pca_lsqproj.sh FINAL_DATASET_PRUNED_TPED MODERN.txt UNKNOWN.txt
 ```
 This should take a few hours. You can check whether the job is still running with ``` sacct ``` or ```jobinfo```.
 
@@ -534,7 +532,7 @@ There are multiple ways of doing this, but if you can't think of a better one he
 ```
 library(ggplot2)
 
-pca<-read.table("YOUR_DATASET.popsubset.evec")
+pca<-read.table("FINAL_DATASET_PRUNED_TPED.popsubset.evec")
 ####### DIVIDE THE TABLE INTO MODERN & UNKNOWN - make sure to edit the right numbers! 
 
 modern<-pca[c(1:1610),]
@@ -628,7 +626,7 @@ module load ADMIXTURE/1.3.0
 A basic ADMIXTURE run looks like this:
 
 ```
-admixture -s time YOUR_PRUNED_DATASET.bed 2
+admixture -s time FINAL_DATASET_PRUNED.bed 2
 ```
 
 This command executes the program with a seed set from system clock time, it gives the input file (remember the extension) and the K value at which to run ADMIXTURE (2 in the previous command).
@@ -648,7 +646,7 @@ for kval in {2..6}; do
 #working folder where admixture and the bed files are
 module load bioinfo-tools
 module load ADMIXTURE/1.3.0
-admixture -j3 -s $RANDOM path/to/your/YOUR_PRUNED_DATASET.bed ${kval}
+admixture -j3 -s $RANDOM path/to/your/FINAL_DATASET_PRUNED.bed ${kval}
 cd ../
 rm -r ${kval}.${int}
 #moves it to a different folder and renames it so you end up with multiple iterations
@@ -695,7 +693,7 @@ for i in {2..7};
 do
     for j in {1..3};
     do
-    echo -e "k${i}_r${j}\t${i}\t${i}.${j}/YOUR_PRUNED_DATASET.${i}.Q" >> unknown_FILEMAP.txt
+    echo -e "k${i}_r${j}\t${i}\t${i}.${j}/FINAL_DATASET_PRUNED.${i}.Q" >> unknown_FILEMAP.txt
     done
 done
 
@@ -703,31 +701,31 @@ done
 Example of what this file looks like, depending on how many K and how many iterations you run:
 
 ```
-k2_r1	2	2.1/YOUR_PRUNED_DATASET.2.Q
-k2_r2	2	2.2/YOUR_PRUNED_DATASET.2.Q
-k2_r3	2	2.3/YOUR_PRUNED_DATASET.2.Q
-k3_r1	3	3.1/YOUR_PRUNED_DATASET.3.Q
-k3_r2	3	3.2/YOUR_PRUNED_DATASET.3.Q
-k3_r3	3	3.3/YOUR_PRUNED_DATASET.3.Q
-k4_r1	4	4.1/YOUR_PRUNED_DATASET.4.Q
-k4_r2	4	4.2/YOUR_PRUNED_DATASET.4.Q
-k4_r3	4	4.3/YOUR_PRUNED_DATASET.4.Q
-k5_r1	5	5.1/YOUR_PRUNED_DATASET.5.Q
-k5_r2	5	5.2/YOUR_PRUNED_DATASET.5.Q
-k5_r3	5	5.3/YOUR_PRUNED_DATASET.5.Q
-k6_r1	6	6.1/YOUR_PRUNED_DATASET.6.Q
-k6_r2	6	6.2/YOUR_PRUNED_DATASET.6.Q
-k6_r3	6	6.3/YOUR_PRUNED_DATASET.6.Q
-k7_r1	7	7.1/YOUR_PRUNED_DATASET.7.Q
-k7_r2	7	7.2/YOUR_PRUNED_DATASET.7.Q
-k7_r3	7	7.3/YOUR_PRUNED_DATASET.7.Q
+k2_r1	2	2.1/FINAL_DATASET_PRUNED.2.Q
+k2_r2	2	2.2/FINAL_DATASET_PRUNED.2.Q
+k2_r3	2	2.3/FINAL_DATASET_PRUNED.2.Q
+k3_r1	3	3.1/FINAL_DATASET_PRUNED.3.Q
+k3_r2	3	3.2/FINAL_DATASET_PRUNED.3.Q
+k3_r3	3	3.3/FINAL_DATASET_PRUNED.3.Q
+k4_r1	4	4.1/FINAL_DATASET_PRUNED.4.Q
+k4_r2	4	4.2/FINAL_DATASET_PRUNED.4.Q
+k4_r3	4	4.3/FINAL_DATASET_PRUNED.4.Q
+k5_r1	5	5.1/FINAL_DATASET_PRUNED.5.Q
+k5_r2	5	5.2/FINAL_DATASET_PRUNED.5.Q
+k5_r3	5	5.3/FINAL_DATASET_PRUNED.5.Q
+k6_r1	6	6.1/FINAL_DATASET_PRUNED.6.Q
+k6_r2	6	6.2/FINAL_DATASET_PRUNED.6.Q
+k6_r3	6	6.3/FINAL_DATASET_PRUNED.6.Q
+k7_r1	7	7.1/FINAL_DATASET_PRUNED.7.Q
+k7_r2	7	7.2/FINAL_DATASET_PRUNED.7.Q
+k7_r3	7	7.3/FINAL_DATASET_PRUNED.7.Q
 ```
 
 The next file we need to create is the ***ind2pop*** file. It is just a list of which population each individual belongs to.
 We have this information in the `.fam` file so we can just cut out the field we need:
 
 ```
-cut -f 1 -d " " YOUR_PRUNED_DATASET.fam > unknown_IND2POP.txt
+cut -f 1 -d " " FINAL_DATASET_PRUNED.fam > unknown_IND2POP.txt
 
 ``` 
 The ind2pop file should look exactly like the first column of the fam.
@@ -751,7 +749,7 @@ Netherlands_BA	Dutch
 ```
 An easy way of doing this is by :
 ```
-cut -f 1 -d " " YOUR_PRUNED_DATASET.fam | uniq > unknown_POPORDER_prep.txt
+cut -f 1 -d " " FINAL_DATASET_PRUNED.fam | uniq > unknown_POPORDER_prep.txt
 ```
 and then just use this simple script:
 ```
