@@ -227,7 +227,7 @@ less test1miss.lmiss
 The `.imiss` contains the individual missingness and the `.lmiss` the marker missingness
 Do you understand the columns of the files? The last three columns are the number of missing, the total, and the fraction of missing markers and individuals for the two files respectively
 
-Look at the first few lines of the newly generated .map (sample info) and .ped (marker and genotype info) files using the more command as demonstrated above
+Look at the first few lines of the newly generated .map (fileset variant information file) and .ped (Paternal ID Maternal ID Sex Phenotype) files using the more command as demonstrated above.
 
 Read in bed/ped file and convert to tped:
 
@@ -333,6 +333,7 @@ You can submit it as a job by doing:
 sbatch -M snowy THIS_SCRIPT.sh YOUR_DATASET5.bed
 ```
 Look at the output from KING & keep the unrelated individuals.
+Checkpoint *At this point, when you exclude the related individuals you should be at YOUR_DATASET_6*
 
 
 ## Step 6 Data Merging & strand flipping
@@ -342,43 +343,33 @@ The next step would be to start merging your data with comparative datasets. But
 Usually, when you merge your data with another dataset there are strand issues. The SNPs in the other dataset might be typed on the reverse DNA strand and yours on the forward, or vice versa. Therefore you need to flip the strand to the other orientation for all the SNPs where there is a strand mismatch. One should not flip C/G and A/T SNPs because one cannot distinguish reverse and forward orientation (i.e. C/G becomes G/C unlike other SNPs i.e. G/T which become C/A). Therefore before merging and flipping all A/T and C/G SNPs must be excluded. However, this can be a problem since some of your SNPs in your dataset may be monomorphic when you don't apply the MAF filter. I.E in the bim file they will appear as C 0 (with 0 meaning missing). So you don't know what kind of SNP it is, it can be C G or C T for instance if it is C G it needs to be filtered out but not if it is C T.
 Therefore, before merging our data to other datasets it is important to first merge your data with a fake / reference_individual, that you prepare, which is heterozygous at every SNP position. This “fake” reference individual you can easily prepare from the SNP info file you get from the genotyping company or your own genomics processing software (such as Genome Studio from Illumina). You can also prepare it from data downloaded for each SNP from a web-database such as dbSNP. 
 
-*You are using the versions of the datasets after they all passed the filtering steps separately
-*P.S. As long as you have all the files/datasets in the same directory you don't need to specify the full paths. If they are in different datasets, remember to add the full path to ```full_path_to_YOUR_OWN_directory/Reference_datasets/datasetA/file```
+### A Proper merging path
+First we prepare for merging the datasets.
 
-*P.P.S. Do this in an **interactive node!**
+### A.1 Rename SNPs 
+When merging datasets from different chips, the same position can have different names on different chips. The rename_SNP.py script can be used on the .bim files to change the SNP name into the names based on position. Luckily for you, this has already been done for the three reference datasets. Otherwise there would have been just the additional step of renaming the SNPs for each dataset prior to merging. But since we don't know where the Unknown dataset came from, we want to conduct this step for it. Check the bim file for the Unknown dataset and see the SNP names before you rename them.
 
+In order to run rename_SNP.py first load ```module load python/2.7.11``` (Issues might occur if not using the right version of Python).
 
-### A.1 Standardize SNP names across datasets
-
-When merging datasets from different chips, the same position can have different names on different chips. The ```rename_SNP.py``` script can be used on the `.bim` files to change the SNP name into the names based on position. Luckily for you, this has already been done for the three reference datasets. Otherwise there would have been just the additional step of renaming the SNPs for each dataset prior to merging.
-But since we don't know where the Unknown dataset came from, we want to conduct this step for it. 
-Check the bim file for the Unknown dataset and see the SNP names before you rename them.  
-
-In order to run ```rename_SNP.py``` first load ```module load python/2.7.11``` (*Issues might occur if not using the right version of Python*).
-
-```
-python rename_SNP.py Unknown.bim
-```
-After which you should get that the output with replaced SNP names has been written to ```Unknown.bim_pos_names```.
-You can delete the original bim (or rename it if you're feeling unsure) & edit the ```Unknown.bim_pos_names``` to be ```Unknown.bim```.
+```python rename_SNP.py Unknown.bim```
+After which you should get that the output with replaced SNP names has been written to Unknown.bim_pos_names. You can delete the original bim (or rename it if you're feeling unsure) & edit the ```Unknown.bim_pos_names``` to be ```Unknown.bim```.
 
 Check to see what happened after the script did its job.
 
 ### A.2 Merging the reference datasets to the RefInd
 
-We want to merge the our data with a set of reference populations that we get from an already published study such as HapMap data or HGDP population data (start with Schlebusch_2012). Many of the sites archiving the data provided them in PLINK format as well. For this practical, we selected a few Ref pops from HapMap and HGDP to compare your Unknown populations to.
+We want to merge the our data with a set of reference populations that we get from an already published study such as HapMap data or HGDP population data. Many of the sites archiving the data provided them in PLINK format as well. For this practical, we selected a few populations from HapMap and HGDP to compare your Unknown populations to.
 
-Have you noticed that PLINK sometimes generates a .nof file and in the log file output the following is mentioned 902 SNPs with no founder genotypes observed Warning, MAF set to 0 for these SNPs (see --nonfounders) This is the monomorphic SNPs in your data.
+*Have you noticed that PLINK sometimes generates a .nof file and in the log file output the following is mentioned 902 SNPs with no founder genotypes observed Warning, MAF set to 0 for these SNPs (see --nonfounders) This is the monomorphic SNPs in your data.*
 
 So our first step will be merging with a fake reference (RefInd) that we prepared from SNP info data beforehand. 
 * Copy the RefInd1 files (bim, bed, and fam) from the DATA folder to your working folder. 
 * Copy the three reference datasets (bim, bed and fam) to the working folder. Look at the .fam files, do you recognize some of these populations? There are two HapMap and three HGDP populations (You can read up on what they are).
-
-Then, just as with the Unknowns, rename the SNPs for the RefInd as well using the same script.
+* **Just as you did for the Unknowns, rename the SNPs for the RefInd as well, using the same script as above**
 
 The next step is to extract your SNPs of interest from the RefInd. Use the Schlebusch_2012 dataset as a starting point.
 ```
-plink --bfile RefInd --extract Schlebusch_2012.bim --make-bed --out RefInd1_ext 
+plink --bfile RefInd --extract Schlebusch_2012_6.bim --make-bed --out RefInd1_ext 
 ```
 Make a list of CG and AT SNPs in your data:
 ```
@@ -390,25 +381,26 @@ sed 's/\t/ /g' RefInd1_ext.bim | grep " T A" >>ATCGlist
 Exclude the CG and AT SNPs from both your RefInd and data:
 ```
 plink  --bfile RefInd1_ext --exclude ATCGlist --make-bed --out RefInd1_ext2 
-plink  --bfile Schlebusch_2012 --exclude ATCGlist --make-bed --out Schlebusch_2012
+plink  --bfile Schlebusch_2012_6 --exclude ATCGlist --make-bed --out Schlebusch_2012_7
 ```
 Merge with RefInd
 ```
-plink --bfile RefInd1_ext2 --bmerge Schlebusch_2012.bed Schlebusch_2012.bim Schlebusch_2012.fam --make-bed --out MergeRef1  
+plink --bfile RefInd1_ext2 --bmerge Schlebusch_2012_7.bed Schlebusch_2012_7.bim Schlebusch_2012_7.fam --make-bed --out MergeRef1  
 ```
-An **error is generated because of the strand mismatches**. 
-The generated file MergeRef1.missnp contains the info on the SNPs where there are mismatches - flip the strand of these SNPs in your data.
+*At this point (or some of the following ones, you might get an error message* - **error is generated because of the strand mismatches**. 
+
+This will generate a file (MergeRef1.missnp) which contains the info on the SNPs where there are mismatches - you need to flip the strand of these SNPs in your data.
 
 ```
-Schlebusch_2012 --flip MergeRef1-merge.missnp --make-bed --out  unk7  
+Schlebusch_2012_7 --flip MergeRef1-merge.missnp --make-bed --out  Schlebusch_2012_8  
 ```
 Try merging again:
 ```
-plink --bfile RefInd1_ext2 --bmerge unk7.bed unk7.bim unk7.fam --make-bed --out MergeRef2  
+plink --bfile RefInd1_ext2 --bmerge Schlebusch_2012_8.bed Schlebusch_2012_8.bim Schlebusch_2012_8.fam --make-bed --out MergeRef2  
 ```
 Now it works. No .nof file is generated which means none of your SNPs are monomorphic anymore
 
-Possible issue: You've done all the flipping and merging and you are still getting an error?
+*Possible issue: You've done all the flipping and merging and you are still getting an error?*
 
 ```
 Error: ~50 variants with 3+ alleles present. 
@@ -420,7 +412,7 @@ It could be that a few positions are causing this issue. In this case (assuming 
 ```
 plink --bfile source1 --exclude merged.missnp --make-bed --out source1_tmp
 plink --bfile source2 --exclude merged.missnp --make-bed --out source2_tmp
-plink --bfile source1_tmp --bmerge source2_tmp --recode transpose --allow-no-sex --out PopStrucIn1
+plink --bfile source1_tmp --bmerge source2_tmp --recode transpose --allow-no-sex --out Excluded_Remerged_Dataset
 rm source1_tmp.*
 rm source2_tmp.*
 ```
@@ -428,17 +420,21 @@ If unsure, at any time you can check Plink's documentation (https://www.cog-geno
 
 After that you can continue with merging the next two reference datasets (Patin & Gurdasani). Just as prevously, remove the A/T & C/G SNPs in each dataset & keep only the overlap between the three datasets (i.e. extract one from the other and then do the merging and flipping).
 
-### A.3 Merge the Unknown dataset to the already merged one
+*Checkpoint* - You can name this dataset ```ALL_REFERENCE_DATASETS``` so that it's easier to follow.
+
+### A.3 Merge the Unknown dataset to the all-three-reference-combined-dataset one
 Finally, after you've merged all the reference datasets, we need to merge in the Unkowns as well. To do this, as previously, filter out the A/T & C/G SNPs and merge, flip and exclude (if you have to). The only difference here is that when adding the Unknowns, we just merge it to the rest (instead of keeping only the overlap, we keep everything at this point)  
+
+*Checkpoint* - You can name this dataset ```ALL_COMBINED_DATASETS``` so that it's easier to follow.
 
 ### A.4 Remember to extract your fake (RefInd) from your data
 
 ```
-plink --bfile MergeRefPop2fil --remove RefInd1.fam --make-bed --out MergeRefPop3  
+plink --bfile ALL_COMBINED_DATASETS --remove RefInd1.fam --make-bed --out FINAL_DATASET  
 ```
 This is the final files for the next exercise. Rename them:
 ```
-mv MergeRefPop3.bed PopStrucIn1.bed; mv MergeRefPop3.bim PopStrucIn1.bim; mv MergeRefPop3.fam PopStrucIn1.fam 
+mv FINAL_DATASET.bed PopStrucIn1.bed; mv FINAL_DATASET.bim PopStrucIn1.bim; mv FINAL_DATASET.fam PopStrucIn1.fam 
 ```
 Now you have generated your input files for the next exercise which will deal with population structure analysis. You will look at the population structure of your unknown samples in comparison to the known reference populations from HapMap and HGDP.
 
