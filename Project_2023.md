@@ -19,12 +19,12 @@ The structure of the project work will be organized as follows:
 
 The specific point of the exercise is for you to identify the populations you have been given in the **'Unknown.fam'**. In order to achieve this, you have been provided a bunch of references (three different datasets) that should come in handy as a way to compare the unknown to the known. Both reference and target populations can be found in the DATA directory:
 ```
-/proj/uppmax2023-2-1/MYSTERY_QUEST/DATA/Reference_datasets
-/proj/uppmax2023-2-1/MYSTERY_QUEST/DATA/Mystery_populations
+/proj/uppmax2023-2-18/MYSTERY_QUEST/DATA/Reference_datasets
+/proj/uppmax2023-2-18/MYSTERY_QUEST/DATA/Mystery_populations
 ```
 Helpful scripts are there to aid you on your quest can be found:
 ```
-/proj/uppmax2023-2-1/MYSTERY_QUEST/SCRIPTS
+/proj/uppmax2023-2-18/MYSTERY_QUEST/SCRIPTS
 ```
 The unknown samples are a mysterious bunch. They look different from the rest don't they? (*hint - check the genotyping rate - i.e. missingness*).
 Your first task is to figure out what types of samples you have stumbled upon and why they are (potentially) very valuable, yet they look the way they do (*the real Sherlocks among you would have noticed by now something odd by just glancing at their names!*) 
@@ -82,7 +82,7 @@ Generally, for any bigger job (bigger Plink jobs, PCA, Admixture) **always work 
 
 Ex.:
 ```
-   interactive -A uppmax2023-2-1 -M snowy -p node -n 32 -t 02:00:00
+   interactive -A uppmax2023-2-18 -M snowy -p node -n 32 -t 02:00:00
 ```
 ### Moving about:
 ```
@@ -165,7 +165,7 @@ lgen format: long format (see manual, not used that often)
 Navigate to the directory you want to work in.
 
 ```
-cd /proj/uppmax2023-2-1 #Uppmax project for this course
+cd /proj/uppmax2023-2-18 #Uppmax project for this course
 ```
 If you don't already have a working directory for this course then create one now:
 ```
@@ -174,7 +174,7 @@ mkdir your_unique_team_name
 
 ### The course material can be found at the following path:
 ```
-/proj/uppmax2023-2-1/MYSTERY_QUEST
+/proj/uppmax2023-2-18/MYSTERY_QUEST
 ```
 
 Copy the datasets from the directory “DATA” to your working folder by **changing** the command below while you are in your working folder. The **dot** means copy the contents "here". Do this for all your datasets. 
@@ -324,7 +324,7 @@ The script for KING is as follows:
 #
 #SBATCH -J king
 #SBATCH -t 12:00:00
-#SBATCH -A uppmax2023-2-1
+#SBATCH -A uppmax2023-2-18
 #SBATCH -n 8
 king -b $1  --unrelated
 ```
@@ -521,7 +521,7 @@ fi
 After you've sorted the abovementioned, make a ```tped``` version of the dataset and you can go ahead & submit a sbatch job:
 
 ```
-sbatch -A uppmax2023-2-1 -M snowy -p core -n 2 -t 07:00:00 -J PCA pca_lsqproj.sh FINAL_DATASET_PRUNED_TPED MODERN.txt UNKNOWN.txt
+sbatch -A uppmax2023-2-18 -M snowy -p core -n 2 -t 07:00:00 -J PCA pca_lsqproj.sh FINAL_DATASET_PRUNED_TPED MODERN.txt UNKNOWN.txt
 ```
 This should take a few hours. You can check whether the job is still running with ``` sacct ``` or ```jobinfo```.
 
