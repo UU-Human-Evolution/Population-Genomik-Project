@@ -464,8 +464,10 @@ Furthermore, make sure to doublecheck your script before running it. 90% of issu
 Before running PCA & ADMIXTURE it is advisable to prune the data to thin the marker set for linkage disequilibrium.
 You can read up on how to prune for LD(https://dalexander.github.io/admixture/admixture-manual.pdf).
 
-```plink --bfile FINAL_DATASET --indep-pairwise 10 10 0.1
-   plink --bfile FINAL_DATASET --extract plink.prune.in --make-bed --out FINAL_DATASET_PRUNED
+```
+
+plink --bfile FINAL_DATASET --indep-pairwise 50 10 0.8
+plink --bfile FINAL_DATASET --extract plink.prune.in --make-bed --out FINAL_DATASET_PRUNED
 
 ```
 Check how much you're pruning out. Perhaps you can tweak the parameters.
