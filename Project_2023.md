@@ -466,8 +466,8 @@ You can read up on how to prune for LD(https://dalexander.github.io/admixture/ad
 
 ```
 
-plink --bfile FINAL_DATASET --indep-pairwise 50 10 0.8
-plink --bfile FINAL_DATASET --extract plink.prune.in --make-bed --out FINAL_DATASET_PRUNED
+  plink --bfile FINAL_DATASET --indep-pairwise 50 10 0.8
+  plink --bfile FINAL_DATASET --extract plink.prune.in --make-bed --out FINAL_DATASET_PRUNED
 
 ```
 Check how much you're pruning out. Perhaps you can tweak the parameters.
