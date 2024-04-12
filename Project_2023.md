@@ -393,7 +393,7 @@ plink --bfile RefInd1_ext2 --bmerge Schlebusch_2012_7.bed Schlebusch_2012_7.bim 
 This will generate a file (MergeRef1.missnp) which contains the info on the SNPs where there are mismatches - you need to flip the strand of these SNPs in your data.
 
 ```
-Schlebusch_2012_7 --flip MergeRef1-merge.missnp --make-bed --out  Schlebusch_2012_8  
+plink --bfile Schlebusch_2012_7 --flip MergeRef1-merge.missnp --make-bed --out  Schlebusch_2012_8  
 ```
 Try merging again:
 ```
